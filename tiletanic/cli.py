@@ -29,7 +29,10 @@ def cli():
 @click.option('--quadkey/--no-quadkey', default=True,
               help="Output option to prints the quadkeys of the tile "
                    "covering generated")
-def cover_geometry(tilescheme, aoi_geojson, zoom, adjacent, quadkey):
+@click.option('--gj/--no-gj', default=False,
+              help="Output option to prints a FeatureCollection of all tiles as geojson "
+                   "for the tile covering generated")
+def cover_geometry(tilescheme, aoi_geojson, zoom, adjacent, quadkey, gj):
     """Calculate a tile covering for an input AOI_GEOJSON at a particular
     ZOOM level using the given TILESCHEME.
 
@@ -93,10 +96,22 @@ def cover_geometry(tilescheme, aoi_geojson, zoom, adjacent, quadkey):
     if not adjacent:
         tiles = _tiles_inside_geom(scheme, tiles, geom)
 
+    # Realize the generator so we can iterate over it multiple times,
+    # if necessary
+    tiles = [t for t in tiles]
+
     if quadkey:
         qks = [scheme.quadkey(t) for t in tiles]
         click.echo( "\n".join( qks ) )
 
+    if gj:
+        features = []
+        for t in tiles:
+            bbox = scheme.bbox( t )
+            features.append( geojson.Feature(geometry=geometry.mapping(geometry.box(bbox[0], bbox[1], bbox[2], bbox[3])),
+                                             properties={"quadkey": scheme.quadkey(t)}) )
+        geojson_str = geojson.dumps( geojson.FeatureCollection(features) )
+        click.echo(geojson_str)
 
 def _tiles_inside_geom(tilescheme, tiles, geom):
     """Filters out tiles do not contain the geometry geom
