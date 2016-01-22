@@ -39,3 +39,14 @@ def test_cover_geometry_dgtiling_level_9_adajcent_tiles():
     assert result.exit_code == 0
     assert result.output == "021323303\n021323312\n021323313\n021323321\n021323323\n021323330\n021323331\n021323332\n021323333\n"
 
+def test_cover_geometry_dgtiling_6_level_9_partitions():
+    # 6-partition Denver metro area AOI
+    #http://bl.ocks.org/d/32778deffa5e2043376b
+    #http://bl.ocks.org/anonymous/raw/32778deffa5e2043376b/map.geojson
+    denver_aoi = '{"type":"FeatureCollection","features":[{"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[-105.47973632812499,39.59510684995191],[-105.47973632812499,40.25856876391262],[-104.60357666015625,40.25856876391262],[-104.60357666015625,39.59510684995191],[-105.47973632812499,39.59510684995191]]]}}]}'
+
+    runner = CliRunner()
+    result = runner.invoke(cli.cover_geometry, ['-'], input=denver_aoi)
+
+    assert result.exit_code == 0
+    assert result.output == "021323001\n021323003\n021323010\n021323011\n021323012\n021323013\n"
